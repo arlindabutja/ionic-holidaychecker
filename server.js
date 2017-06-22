@@ -1,48 +1,52 @@
 var express = require('express'),
     bodyParser      = require('body-parser'),
     methodOverride  = require('method-override'),
-    endpoints = require('./routes/data/index'),
-    holidayslist    = require('./routes/holidayslist'),
+    apiRoutes = require('./routes/restful_api_routes'),
     server = express(),
-    MongoClient = require('mongodb').MongoClient;
-
-
-    var dburl = "mongodb://butjaa:admin@ds123182.mlab.com:23182/holidaychecker-db"
-
-    
+    MongoClient = require('mongodb').MongoClient,
+    dburl = "mongodb://butjaa:admin@ds123182.mlab.com:23182/holidaychecker-db",
+    moment = require('moment');
 
     MongoClient.connect(dburl, function (err, db) {
 
      if(err) throw err;
 
-       // db.collection('countries', function (err, collection) {
-          //collection.updateMany({},{$set: { "country": "Austria" }})
-       // }); 
+   /* db.collection('countries', function(err, collection) {
+        collection.updateMany({},{$set: { "isoDate": "" }})
+        collection.find().snapshot().forEach(
+                function (e) {
+                    
+                var x = moment(e.date, 'DD-MM-YYYY').format();
+                e.isoDate = x;
+                delete e.datum;
 
-        
+                // save the updated document
+                collection.save(e);
+                }
+            )});*/
+
     });
 
     server.use(bodyParser.json());
     server.use(bodyParser.urlencoded({
         extended: true
     }));
-    server.use(methodOverride());    // simulate DELETE and PUT
+    server.use(methodOverride());
 
-    // CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
     server.all('*', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "X-Requested-With");
         next();
     });
 
-    server.get('/api', endpoints.findAll);
-    server.get('/api/:country', endpoints.findByCountry);
-    server.delete('/api/:country', endpoints.delete);
-    //server.get('/api/:id', endpoints.findById);
-    //server.post('/api', endpoints.add);
-    //server.put('/api/:id', endpoints.update);
-    server.get('/api/:country/:dateFrom/:dateTo', endpoints.findByGivenParams);
-    //server.get('/api/search?country={country}&dateFrom={dateFrom}&dateTo={dateTo}', endpoints.findByGivenParams);
+    server.get('/api', apiRoutes.findAll);
+    server.get('/api/:country', apiRoutes.findByCountry);
+    server.delete('/api/:country', apiRoutes.delete);
+    //server.get('/api/:id', apiRoutes.findById);
+    //server.post('/api', apiRoutes.add);
+    //server.put('/api/:id', apiRoutes.update);
+    server.get('/api/:country/:dateFrom/:dateTo', apiRoutes.findByGivenParams);
+    //server.get('/api/search?country={country}&dateFrom={dateFrom}&dateTo={dateTo}', apiRoutes.findByGivenParams);
 
 
     server.set('port', process.env.PORT || 3000);
